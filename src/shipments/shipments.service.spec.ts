@@ -99,4 +99,30 @@ describe('ShipmentsService', () => {
     await expect(service.findOne(999)).rejects.toBeInstanceOf(NotFoundException);
     expect(repository.findOneBy).toHaveBeenCalledWith({ id: 999 });
   });
+
+  //Caso 5
+  it('creates and saves a shipment', async () => {
+    // Arrange
+    const inputDto = { trackingCode: 'SHIP-100', destination: 'Cali' };
+    const builtEntity = {
+      ...inputDto,
+      status: ShipmentStatus.CREATED,
+    };
+    const savedEntity = {
+      id: 10,
+      ...builtEntity,
+    };
+
+    repository.create.mockReturnValue(builtEntity);
+    repository.save.mockResolvedValue(savedEntity);
+
+    const result = await service.create(inputDto as any);
+
+    expect(repository.create).toHaveBeenCalledWith({
+      ...inputDto,
+      status: ShipmentStatus.CREATED,
+    });
+    expect(repository.save).toHaveBeenCalledWith(builtEntity);
+    expect(result).toEqual(savedEntity);
+  });
 });
