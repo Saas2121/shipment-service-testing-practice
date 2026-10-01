@@ -125,4 +125,33 @@ describe('ShipmentsService', () => {
     expect(repository.save).toHaveBeenCalledWith(builtEntity);
     expect(result).toEqual(savedEntity);
   });
+
+  // Caso 6 
+  it('dispatches and saves a valid shipment', async () => {
+    
+    const shipmentId = 15;
+    const existingShipment = {
+      id: shipmentId,
+      trackingCode: 'SHIP-015',
+      destination: 'Barranquilla',
+      status: ShipmentStatus.CREATED,
+    };
+    const updatedShipment = {
+      ...existingShipment,
+      status: ShipmentStatus.DISPATCHED,
+    };
+
+    repository.findOneBy.mockResolvedValue(existingShipment);
+    repository.save.mockResolvedValue(updatedShipment);
+
+    
+    const result = await service.dispatch(shipmentId);
+
+    
+    expect(rulesService.ensureCanBeDispatched).toHaveBeenCalledWith(existingShipment);
+    expect(repository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ status: ShipmentStatus.DISPATCHED }),
+    );
+    expect(result).toEqual(updatedShipment);
+  });
 });
